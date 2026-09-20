@@ -1,5 +1,5 @@
 name: volley_teams
-description: "A new Flutter project."
+description: "Volleyball team manager: players check in at the court and an organizer generates balanced teams."
 publish_to: 'none'
 version: 0.1.0+1
 

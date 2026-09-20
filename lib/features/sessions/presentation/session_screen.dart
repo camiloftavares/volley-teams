@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -25,7 +26,7 @@ class SessionScreen extends ConsumerStatefulWidget {
 
 class _SessionScreenState extends ConsumerState<SessionScreen> {
   List<Team>? _preview;
-  int _previewPlayerCount = 0;
+  Set<String> _previewCheckInIds = const {};
   bool _busy = false;
 
   SessionKey get _key => (groupId: widget.groupId, sessionId: widget.sessionId);
@@ -68,7 +69,7 @@ class _SessionScreenState extends ConsumerState<SessionScreen> {
         if (result.isErr && mounted) showFailure(context, result.failure);
       });
 
-  Future<void> _generate(String userId, int checkedInCount) => _run(() async {
+  Future<void> _generate(String userId, Set<String> checkedInIds) => _run(() async {
         final result = await ref.read(generateTeamsProvider)(
           groupId: widget.groupId,
           sessionId: widget.sessionId,
@@ -78,7 +79,7 @@ class _SessionScreenState extends ConsumerState<SessionScreen> {
         if (result.isErr) return showFailure(context, result.failure);
         setState(() {
           _preview = result.value;
-          _previewPlayerCount = checkedInCount;
+          _previewCheckInIds = checkedInIds;
         });
       });
 
@@ -253,10 +254,10 @@ class _SessionScreenState extends ConsumerState<SessionScreen> {
             FilledButton.icon(
               icon: const Icon(Icons.shuffle),
               label: const Text('Generate teams'),
-              onPressed: _busy ? null : () => _generate(userId, checkIns.length),
+              onPressed: _busy ? null : () => _generate(userId, {for (final c in checkIns) c.userId}),
             )
           else ...[
-            if (_previewPlayerCount != checkIns.length)
+            if (!setEquals(_previewCheckInIds, {for (final c in checkIns) c.userId}))
               const Padding(
                 padding: EdgeInsets.only(bottom: 8),
                 child: Text('Check-ins changed since this draw. Reshuffle to include everyone.'),
@@ -265,7 +266,7 @@ class _SessionScreenState extends ConsumerState<SessionScreen> {
             Row(
               children: [
                 OutlinedButton(
-                  onPressed: _busy ? null : () => _generate(userId, checkIns.length),
+                  onPressed: _busy ? null : () => _generate(userId, {for (final c in checkIns) c.userId}),
                   child: const Text('Reshuffle'),
                 ),
                 const SizedBox(width: 8),

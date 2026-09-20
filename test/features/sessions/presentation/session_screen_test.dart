@@ -95,6 +95,25 @@ void main() {
       expect(find.byKey(const Key('team-0')), findsOneWidget);
     });
 
+    testWidgets('swapping a check-in after the draw flags the preview as stale', (tester) async {
+      final h = Harness(user: boss)..seed();
+      checkInPlayers(h, ['ana', 'p1', 'p2', 'p3', 'p4', 'p5']);
+      await pumpSession(tester, h);
+
+      await tester.tap(find.text('Generate teams'));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('team-0')), findsOneWidget);
+      expect(find.textContaining('Check-ins changed since this draw'), findsNothing);
+
+      // One player leaves and another arrives: the count stays at 6.
+      await h.sessions.checkOut('g1', 's1', 'p5');
+      await h.sessions.checkIn('g1', 's1', CheckIn(userId: 'boss', checkedInAt: h.now, distanceMeters: 5));
+      await tester.pumpAndSettle();
+
+      expect(h.sessions.checkIns['g1/s1']!, hasLength(6));
+      expect(find.textContaining('Check-ins changed since this draw'), findsOneWidget);
+    });
+
     testWidgets('with too few check-ins the organizer is told why', (tester) async {
       final h = Harness(user: boss)..seed();
       checkInPlayers(h, ['ana', 'p1']);

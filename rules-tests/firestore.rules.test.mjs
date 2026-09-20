@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { after, before, beforeEach, describe, test } from 'node:test';
 import {
@@ -14,6 +15,7 @@ import {
   getDoc,
   getDocs,
   query,
+  runTransaction,
   setDoc,
   updateDoc,
   where,
@@ -112,6 +114,17 @@ describe('groups and invite codes', () => {
     await assertFails(batch.commit());
   });
 
+  test('creating a group works as a read-free transaction (three sets)', async () => {
+    const db = as('zoe');
+    await assertSucceeds(
+      runTransaction(db, async (tx) => {
+        tx.set(doc(db, 'groups/g2'), { name: 'New', organizerId: 'zoe', inviteCode: 'NEWCODE2' });
+        tx.set(doc(db, 'inviteCodes/NEWCODE2'), { groupId: 'g2', groupName: 'New' });
+        tx.set(doc(db, 'groups/g2/members/zoe'), member('zoe', 'organizer'));
+      }),
+    );
+  });
+
   test('a group cannot be created on behalf of someone else', async () => {
     await assertFails(setDoc(doc(as('zoe'), 'groups/g2'), { name: 'X', organizerId: 'boss', inviteCode: 'X' }));
   });
@@ -145,6 +158,46 @@ describe('members', () => {
     await assertFails(join('eve', { inviteCode: 'WRONG222' }));
     await assertFails(join('eve', { role: 'organizer' }));
     await assertFails(join('eve', { organizerOverride: 5 }));
+  });
+
+  // Mirrors joinByCode: read the code, read own member doc, create it if absent.
+  const joinTransaction = (uid) => {
+    const db = as(uid);
+    return runTransaction(db, async (tx) => {
+      await tx.get(doc(db, 'inviteCodes/CODE2345'));
+      const existing = await tx.get(doc(db, `groups/g1/members/${uid}`));
+      if (!existing.exists()) {
+        tx.set(doc(db, `groups/g1/members/${uid}`), { ...member(uid), inviteCode: 'CODE2345' });
+      }
+    });
+  };
+
+  // withSecurityRulesDisabled resolves to void, so capture the snapshot in a closure.
+  const readAsAdmin = async (path) => {
+    let snap;
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      snap = await getDoc(doc(ctx.firestore(), path));
+    });
+    return snap;
+  };
+
+  test('a non-member can join via a create-if-absent transaction', async () => {
+    await assertSucceeds(joinTransaction('eve'));
+    const snap = await readAsAdmin('groups/g1/members/eve');
+    assert.equal(snap.exists(), true);
+    assert.equal(snap.data().userId, 'eve');
+  });
+
+  test('re-joining as an existing member reads, does not write, and succeeds', async () => {
+    const before = (await readAsAdmin('groups/g1/members/ana')).data();
+    await assertSucceeds(joinTransaction('ana'));
+    const after = (await readAsAdmin('groups/g1/members/ana')).data();
+    assert.deepEqual(after, before);
+  });
+
+  test('a non-member cannot read other users\' member documents', async () => {
+    await assertFails(getDoc(doc(as('eve'), 'groups/g1/members/ana')));
+    await assertFails(getDoc(doc(as('eve'), 'groups/g1/members/boss')));
   });
 
   test('the userId field must match the document id', async () => {

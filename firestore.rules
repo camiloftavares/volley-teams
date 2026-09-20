@@ -52,6 +52,10 @@ service cloud.firestore {
       match /members/{userId} {
         allow read: if isMember(groupId);
 
+        // A user may `get` their own member document even when it does not exist
+        // yet, so joining can be a create-if-absent transaction.
+        allow get: if signedIn() && request.auth.uid == userId;
+
         allow create: if signedIn()
           && request.auth.uid == userId
           && request.resource.data.userId == userId

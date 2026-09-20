@@ -141,6 +141,12 @@ describe('groups and invite codes', () => {
     await assertFails(updateDoc(doc(as('ana'), 'groups/g1'), { radiusMeters: 200 }));
     await assertFails(updateDoc(doc(as('boss'), 'groups/g1'), { organizerId: 'ana' }));
   });
+
+  test('nobody can delete a group, not even the organizer (v1 has no cascade)', async () => {
+    await assertFails(deleteDoc(doc(as('boss'), 'groups/g1')));
+    await assertFails(deleteDoc(doc(as('ana'), 'groups/g1')));
+    await assertSucceeds(getDoc(doc(as('boss'), 'groups/g1')));
+  });
 });
 
 describe('members', () => {
@@ -299,5 +305,63 @@ describe('check-ins', () => {
     await assertSucceeds(deleteDoc(doc(as('boss'), 'groups/g1/sessions/s1/checkins/ana')));
     await assertSucceeds(checkIn('ana'));
     await assertSucceeds(deleteDoc(doc(as('ana'), 'groups/g1/sessions/s1/checkins/ana')));
+  });
+});
+
+// Replays FirestoreSessionRepository's exact transaction shapes (read the
+// document first, then write), because a rules result can differ between a
+// plain write and the same write preceded by a transaction read.
+describe('session transactions (as FirestoreSessionRepository runs them)', () => {
+  const createIfAbsent = (uid, sessionId = 'new') => {
+    const db = as(uid);
+    const ref = doc(db, `groups/g1/sessions/${sessionId}`);
+    return runTransaction(db, async (tx) => {
+      const snap = await tx.get(ref);
+      if (snap.exists()) return false;
+      tx.set(ref, session());
+      return true;
+    });
+  };
+
+  test('createIfAbsent: the organizer reads a missing session then sets it', async () => {
+    assert.equal(await assertSucceeds(createIfAbsent('boss')), true);
+    assert.equal((await getDoc(doc(as('boss'), 'groups/g1/sessions/new'))).exists(), true);
+  });
+
+  test('createIfAbsent: the same replay by a plain member is rejected', async () => {
+    await assertFails(createIfAbsent('ana'));
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      assert.equal((await getDoc(doc(ctx.firestore(), 'groups/g1/sessions/new'))).exists(), false);
+    });
+  });
+
+  test('publishTeams: the organizer reads s1 then updates status and teams', async () => {
+    const db = as('boss');
+    const ref = doc(db, 'groups/g1/sessions/s1');
+    const teams = [{ index: 0, playerIds: ['ana'], ratingTotal: 3 }];
+    await assertSucceeds(
+      runTransaction(db, async (tx) => {
+        const snap = await tx.get(ref);
+        assert.equal(snap.data().status, 'scheduled');
+        tx.update(ref, { status: 'teamsPublished', teams });
+      }),
+    );
+    const after = await getDoc(doc(as('ana'), 'groups/g1/sessions/s1'));
+    assert.equal(after.data().status, 'teamsPublished');
+  });
+
+  test('checkIn: a member reads s1 then sets their own check-in inside the window', async () => {
+    const db = as('ana');
+    await assertSucceeds(
+      runTransaction(db, async (tx) => {
+        const snap = await tx.get(doc(db, 'groups/g1/sessions/s1'));
+        assert.equal(snap.data().status, 'scheduled');
+        tx.set(doc(db, 'groups/g1/sessions/s1/checkins/ana'), {
+          checkedInAt: Timestamp.now(),
+          distanceMeters: 12,
+        });
+      }),
+    );
+    assert.equal((await getDoc(doc(as('boss'), 'groups/g1/sessions/s1/checkins/ana'))).exists(), true);
   });
 });

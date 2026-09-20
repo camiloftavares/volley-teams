@@ -47,7 +47,8 @@ service cloud.firestore {
       allow create: if signedIn() && request.resource.data.organizerId == request.auth.uid;
       allow update: if isOrganizer(groupId)
         && request.resource.data.organizerId == resource.data.organizerId;
-      allow delete: if isOrganizer(groupId);
+      // No `delete`: v1 has no cascade, so deleting a group would orphan its
+      // members, sessions and check-ins and leave the invite code live.
 
       match /members/{userId} {
         allow read: if isMember(groupId);

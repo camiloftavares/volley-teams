@@ -1,4 +1,4 @@
-package com.example.volley_teams
+package io.riversea.zoeapp
 
 import io.flutter.embedding.android.FlutterActivity
 

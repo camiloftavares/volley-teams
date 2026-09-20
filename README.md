@@ -27,3 +27,9 @@ flutter analyze && flutter test        # domain, data, widget and architecture t
 ## Architecture
 
 `lib/features/<feature>/{domain,data,presentation}`. Domain is pure Dart; `presentation -> domain <- data` is enforced by `test/architecture_test.dart`. Ports are bound to Firebase in `lib/app/composition_root.dart`; tests bind fakes.
+
+## Security notes
+
+- The backend is client-only, so the geofence is enforced on the device. The Security Rules cannot verify GPS; they only check membership, the check-in time window and that a user writes their own check-in.
+- Mock-location detection relies on `geolocator`'s `Position.isMocked`, which works on Android only. On iOS it is always `false`, so the mock-location check cannot fire there and the geofence relies on social mitigations: the organizer can remove any check-in, and check-ins are visible to the whole group.
+- `checkedInAt` and `distanceMeters` are written by the client and are not validated by the rules. A determined member with a modified client can fake a check-in; the organizer's "remove check-in" is the real control.

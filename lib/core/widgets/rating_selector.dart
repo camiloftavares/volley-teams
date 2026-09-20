@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../features/groups/domain/entities/member.dart';
+import '../rating.dart';
 
 /// Picks a skill rating from 1 to 5.
 class RatingSelector extends StatelessWidget {

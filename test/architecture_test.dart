@@ -43,7 +43,7 @@ void main() {
   test('domain code imports no framework, data or presentation code', () {
     final domain = [
       ...dartFiles('lib/features').where((f) => f.path.contains('/domain/')),
-      for (final name in ['failure', 'result', 'geo', 'random_codes', 'location_provider'])
+      for (final name in ['failure', 'result', 'geo', 'random_codes', 'location_provider', 'rating'])
         File('lib/core/$name.dart'),
     ].where((f) => f.existsSync());
     expect(violations(domain, forbiddenInDomain), isEmpty);

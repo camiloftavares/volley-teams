@@ -1,9 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-const minRating = 1;
-const maxRating = 5;
-
-bool isValidRating(int rating) => rating >= minRating && rating <= maxRating;
+export '../../../../core/rating.dart';
 
 enum MemberRole { organizer, player }
 

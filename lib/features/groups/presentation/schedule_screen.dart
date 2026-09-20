@@ -122,9 +122,15 @@ class _ScheduleFormState extends ConsumerState<_ScheduleForm> {
                 ),
           onTap: () async {
             final now = DateTime.now();
+            // An end date already in the past must not be the initial date:
+            // showDatePicker requires initialDate >= firstDate.
+            final endDate = _endDate;
+            final initial = endDate != null && !DateUtils.dateOnly(endDate).isBefore(DateUtils.dateOnly(now))
+                ? endDate
+                : now.add(const Duration(days: 90));
             final picked = await showDatePicker(
               context: context,
-              initialDate: _endDate ?? now.add(const Duration(days: 90)),
+              initialDate: initial,
               firstDate: now,
               lastDate: now.add(const Duration(days: 730)),
             );

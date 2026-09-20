@@ -304,10 +304,12 @@ class _EditGameDialogState extends State<_EditGameDialog> {
   late DateTime _startsAt = widget.session.startsAt.toLocal();
 
   Future<void> _pickTime() async {
+    final firstDate = DateTime.now().subtract(const Duration(days: 1));
     final date = await showDatePicker(
       context: context,
-      initialDate: _startsAt,
-      firstDate: DateTime.now().subtract(const Duration(days: 1)),
+      // A game that began more than a day ago must not push initialDate before firstDate.
+      initialDate: _startsAt.isBefore(firstDate) ? firstDate : _startsAt,
+      firstDate: firstDate,
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
     if (date == null || !mounted) return;

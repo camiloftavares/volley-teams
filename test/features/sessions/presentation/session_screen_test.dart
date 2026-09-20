@@ -154,5 +154,25 @@ void main() {
       expect(h.sessions.sessions['g1']!['s1']!.status, SessionStatus.cancelled);
       expect(find.text('This game was cancelled'), findsOneWidget);
     });
+
+    testWidgets('the start picker opens for a game that began long ago', (tester) async {
+      final h = Harness(user: boss)..seed();
+      // A fixed date far in the past, so it is more than a day before the real clock too.
+      h.sessions.sessions['g1'] = {
+        's1': GameSession.scheduled(
+          id: 's1', startsAt: DateTime.utc(2020, 1, 1, 19), teamSize: 3,
+          court: const Coordinates(0, 0), radiusMeters: 150,
+        ),
+      };
+      await pumpSession(tester, h);
+
+      await tester.tap(find.text('Edit game'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Start'));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(find.byType(DatePickerDialog), findsOneWidget);
+    });
   });
 }

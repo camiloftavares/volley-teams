@@ -18,7 +18,10 @@ abstract interface class GroupRepository {
   Future<Result<Group>> createGroup(Group group, Member organizer);
 
   /// Resolves [code] to a group and adds [member] to it.
-  /// Fails with `InvalidInviteCode` when the code is unknown.
+  ///
+  /// Joining is create-if-absent: if the user already has a member document it
+  /// is left unchanged (rating, override and role are kept) and the group is
+  /// still returned. Fails with `InvalidInviteCode` when the code is unknown.
   Future<Result<Group>> joinByCode(String code, Member member);
 
   Future<Result<void>> updateGroup(Group group);

@@ -70,6 +70,27 @@ void main() {
       expect(stored.role, MemberRole.player);
       expect(stored.organizerOverride, isNull);
     });
+
+    test('joining again keeps the existing member (rating, override, role)', () async {
+      final group = (await createGroup(name: 'G', court: court, organizer: ana)).value;
+      await JoinGroupByCode(repo)(code: group.inviteCode, member: bruno);
+      await SetOrganizerOverride(repo, OrganizerGuard(repo))(
+        groupId: group.id, actingUserId: 'ana', targetUserId: 'bruno', rating: 1,
+      );
+
+      final again = await JoinGroupByCode(repo)(
+        code: group.inviteCode,
+        member: bruno.copyWith(selfRating: 5),
+      );
+      expect(again.isOk, isTrue);
+      final storedBruno = repo.members[group.id]!['bruno']!;
+      expect(storedBruno.selfRating, 3);
+      expect(storedBruno.organizerOverride, 1);
+
+      final organizerAgain = await JoinGroupByCode(repo)(code: group.inviteCode, member: ana);
+      expect(organizerAgain.isOk, isTrue);
+      expect(repo.members[group.id]!['ana']!.role, MemberRole.organizer);
+    });
   });
 
   group('ratings', () {

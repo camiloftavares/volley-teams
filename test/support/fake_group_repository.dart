@@ -49,7 +49,7 @@ class FakeGroupRepository implements GroupRepository {
     final match = groups.values.where((g) => g.inviteCode == code);
     if (match.isEmpty) return const Err(InvalidInviteCode());
     final group = match.first;
-    members[group.id]![member.userId] = member;
+    members[group.id]!.putIfAbsent(member.userId, () => member);
     _changes.notify();
     return Ok(group);
   }

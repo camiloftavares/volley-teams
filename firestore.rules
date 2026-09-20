@@ -1,0 +1,117 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function groupPath(groupId) {
+      return /databases/$(database)/documents/groups/$(groupId);
+    }
+
+    function memberPath(groupId, userId) {
+      return /databases/$(database)/documents/groups/$(groupId)/members/$(userId);
+    }
+
+    function sessionPath(groupId, sessionId) {
+      return /databases/$(database)/documents/groups/$(groupId)/sessions/$(sessionId);
+    }
+
+    function isMember(groupId) {
+      return signedIn() && exists(memberPath(groupId, request.auth.uid));
+    }
+
+    function isOrganizer(groupId) {
+      return signedIn() && get(groupPath(groupId)).data.organizerId == request.auth.uid;
+    }
+
+    function validRating(value) {
+      return value is int && value >= 1 && value <= 5;
+    }
+
+    function onlyChanges(keys) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys);
+    }
+
+    // Joining: clients may `get` a code (never list codes).
+    match /inviteCodes/{code} {
+      allow get: if signedIn();
+      allow create: if signedIn()
+        && getAfter(groupPath(request.resource.data.groupId)).data.organizerId == request.auth.uid;
+    }
+
+    match /groups/{groupId} {
+      allow read: if isMember(groupId);
+      allow create: if signedIn() && request.resource.data.organizerId == request.auth.uid;
+      allow update: if isOrganizer(groupId)
+        && request.resource.data.organizerId == resource.data.organizerId;
+      allow delete: if isOrganizer(groupId);
+
+      match /members/{userId} {
+        allow read: if isMember(groupId);
+
+        allow create: if signedIn()
+          && request.auth.uid == userId
+          && validRating(request.resource.data.selfRating)
+          && (
+            // The group creator's own document, written in the same batch as the group.
+            (request.resource.data.role == 'organizer'
+              && getAfter(groupPath(groupId)).data.organizerId == userId)
+            // A player joining with a valid invite code.
+            || (request.resource.data.role == 'player'
+              && request.resource.data.get('organizerOverride', null) == null
+              && get(/databases/$(database)/documents/inviteCodes/$(request.resource.data.inviteCode)).data.groupId == groupId)
+          );
+
+        allow update: if signedIn() && (
+          (request.auth.uid == userId
+            && onlyChanges(['selfRating'])
+            && validRating(request.resource.data.selfRating))
+          || (isOrganizer(groupId)
+            && onlyChanges(['organizerOverride'])
+            && (request.resource.data.organizerOverride == null
+              || validRating(request.resource.data.organizerOverride)))
+        );
+
+        // The organizer cannot leave or be removed in v1.
+        allow delete: if signedIn()
+          && resource.data.role != 'organizer'
+          && (request.auth.uid == userId || isOrganizer(groupId));
+      }
+
+      match /sessions/{sessionId} {
+        allow read: if isMember(groupId);
+        allow create: if isOrganizer(groupId) && request.resource.data.status == 'scheduled';
+        // Teams can be published only from `scheduled`.
+        allow update: if isOrganizer(groupId)
+          && (request.resource.data.status != 'teamsPublished'
+            || resource.data.status == 'scheduled');
+        allow delete: if isOrganizer(groupId);
+
+        match /checkins/{userId} {
+          allow read: if isMember(groupId);
+
+          allow create, update: if signedIn()
+            && request.auth.uid == userId
+            && isMember(groupId)
+            && get(sessionPath(groupId, sessionId)).data.status == 'scheduled'
+            && request.time >= get(sessionPath(groupId, sessionId)).data.checkInOpensAt
+            && request.time <= get(sessionPath(groupId, sessionId)).data.checkInClosesAt;
+
+          allow delete: if signedIn() && (
+            (request.auth.uid == userId
+              && get(sessionPath(groupId, sessionId)).data.status == 'scheduled')
+            || isOrganizer(groupId)
+          );
+        }
+      }
+    }
+
+    // "My groups": collection-group query over the caller's own member documents.
+    match /{path=**}/members/{userId} {
+      allow read: if signedIn() && resource.data.userId == request.auth.uid;
+    }
+  }
+}

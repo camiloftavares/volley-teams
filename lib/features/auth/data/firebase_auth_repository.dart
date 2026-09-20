@@ -32,12 +32,19 @@ class FirebaseAuthRepository implements AuthRepository {
           : Unexpected(e.description ?? e.code.name));
     } on FirebaseAuthException catch (e) {
       return Err(Unexpected(e.message ?? e.code));
+    } on Exception catch (e) {
+      // e.g. a PlatformException from the plugin; never let it cross the boundary.
+      return Err(Unexpected('Sign-in failed: $e'));
     }
   }
 
   @override
   Future<void> signOut() async {
-    await _google.signOut();
+    try {
+      await _google.signOut();
+    } on Exception {
+      // The Firebase sign-out below is what ends the app session.
+    }
     await _auth.signOut();
   }
 

@@ -26,8 +26,9 @@ class ScheduleExpander {
 
   static const defaultHorizonDays = 28;
 
-  /// Occurrences within [horizonDays] local days starting today. A game whose
-  /// check-in window has already closed is skipped.
+  /// Occurrences within [horizonDays] local days starting today, plus yesterday
+  /// (a late game's check-in window can still be open after midnight). A game
+  /// whose check-in window has already closed is skipped.
   List<SessionOccurrence> expand({
     required Schedule schedule,
     required DateTime now,
@@ -41,7 +42,7 @@ class ScheduleExpander {
     final lastDay = end == null ? null : DateTime.utc(end.year, end.month, end.day);
 
     final occurrences = <SessionOccurrence>[];
-    for (var offset = 0; offset < horizonDays; offset++) {
+    for (var offset = -1; offset < horizonDays; offset++) {
       final day = today.add(Duration(days: offset));
       if (lastDay != null && day.isAfter(lastDay)) break;
       if (!schedule.weekdays.contains(day.weekday)) continue;

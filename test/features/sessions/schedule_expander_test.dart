@@ -68,6 +68,27 @@ void main() {
     expect(result.first.id, '2026-03-01T19:00');
   });
 
+  group('a game from yesterday whose window is still open', () {
+    const lateSaturday = Schedule(
+      weekdays: {DateTime.saturday},
+      startTime: LocalTime(22, 0),
+      timezone: 'America/New_York',
+    );
+
+    test('is materialised (Sat 22:00 game, opened at 00:30 Sunday local)', () {
+      // 2026-03-01 05:30 UTC = 00:30 EST Sunday; the window closes at 06:00 UTC.
+      final result = expander.expand(schedule: lateSaturday, now: DateTime.utc(2026, 3, 1, 5, 30));
+      expect(result.first.id, '2026-02-28T22:00');
+      expect(result.first.startsAt, DateTime.utc(2026, 3, 1, 3));
+    });
+
+    test('is not returned once its window has closed', () {
+      final result = expander.expand(schedule: lateSaturday, now: DateTime.utc(2026, 3, 1, 7));
+      expect(result.first.id, '2026-03-07T22:00');
+      expect(result.map((o) => o.id), isNot(contains('2026-02-28T22:00')));
+    });
+  });
+
   test('ids are stable when expanding twice', () {
     final now = DateTime.utc(2026, 3, 1, 12);
     expect(expander.expand(schedule: sundays, now: now),

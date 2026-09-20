@@ -130,6 +130,24 @@ void main() {
     });
   });
 
+  group('swap pass', () {
+    test('narrows the spread of a raw draw that was unbalanced', () {
+      // Found by scanning seeds: for seed 11 the raw draw has a spread of 1.0
+      // and the swap pass brings it to 0.0.
+      final players = roster([5, 4, 4, 3, 3, 2, 2, 1]);
+      const seed = 11;
+
+      final raw = const TeamBalancer(swapPass: false)
+          .balance(players: players, teamSize: 4, random: Random(seed))
+          .value;
+      final balanced = balancer.balance(players: players, teamSize: 4, random: Random(seed)).value;
+
+      expect(spreadOf(raw), greaterThan(0));
+      expect(spreadOf(balanced), lessThan(spreadOf(raw)));
+      expectOnePerTier(balanced, players);
+    });
+  });
+
   group('properties over random rosters', () {
     test('hold for 400 rosters', () {
       final meta = Random(2026);

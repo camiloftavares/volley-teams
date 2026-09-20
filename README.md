@@ -14,7 +14,7 @@ Plan: `docs/superpowers/plans/2026-09-20-volleyball-team-manager.md`.
 ## Run
 
 ```bash
-flutter run --dart-define=GOOGLE_SERVER_CLIENT_ID=<web-client-id>.apps.googleusercontent.com
+flutter run --dart-define-from-file=dart_defines.json
 ```
 
 ## Test

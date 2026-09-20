@@ -1,11 +1,1 @@
-{
-  "firestore": {
-    "rules": "firestore.rules",
-    "indexes": "firestore.indexes.json"
-  },
-  "emulators": {
-    "firestore": { "host": "127.0.0.1", "port": 8080 },
-    "ui": { "enabled": false },
-    "singleProjectMode": true
-  }
-}
+{"firestore":{"rules":"firestore.rules","indexes":"firestore.indexes.json"},"emulators":{"firestore":{"host":"127.0.0.1","port":8080},"ui":{"enabled":false},"singleProjectMode":true},"flutter":{"platforms":{"android":{"default":{"projectId":"zoe-app-6e634","appId":"1:550117626799:android:94e5a0768253a1f264d55a","fileOutput":"android/app/google-services.json"}},"ios":{"default":{"projectId":"zoe-app-6e634","appId":"1:550117626799:ios:d697fe2acf10d62164d55a","uploadDebugSymbols":false,"fileOutput":"ios/Runner/GoogleService-Info.plist"}},"dart":{"lib/firebase_options.dart":{"projectId":"zoe-app-6e634","configurations":{"android":"1:550117626799:android:94e5a0768253a1f264d55a","ios":"1:550117626799:ios:d697fe2acf10d62164d55a"}}}}}}

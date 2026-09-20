@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "550117626799",
+    "project_id": "zoe-app-6e634",
+    "storage_bucket": "zoe-app-6e634.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:550117626799:android:94e5a0768253a1f264d55a",
+        "android_client_info": {
+          "package_name": "io.riversea.zoeapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "550117626799-uav6v1lntqcmlaetqqdrh54jv3fufqvf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "io.riversea.zoeapp",
+            "certificate_hash": "35f35957dc2d27120b654c5fbb019657a7682bb6"
+          }
+        },
+        {
+          "client_id": "550117626799-g6s51iop26ku6jkubh95lkmn9sbj8f44.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD_2rmCQA_eyiw6p_H2rbzUEoGovDOkK2Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "550117626799-g6s51iop26ku6jkubh95lkmn9sbj8f44.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "550117626799-g97cn5okmmasqh2130muvif49rdg226a.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "io.riversea.zoeapp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

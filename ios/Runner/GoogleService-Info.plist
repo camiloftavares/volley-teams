@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>550117626799-g97cn5okmmasqh2130muvif49rdg226a.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.550117626799-g97cn5okmmasqh2130muvif49rdg226a</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>550117626799-uav6v1lntqcmlaetqqdrh54jv3fufqvf.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyCSaOiyZrWgBrWpwyXiUECgZu1nynyR0Sk</string>
+	<key>GCM_SENDER_ID</key>
+	<string>550117626799</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>io.riversea.zoeapp</string>
+	<key>PROJECT_ID</key>
+	<string>zoe-app-6e634</string>
+	<key>STORAGE_BUCKET</key>
+	<string>zoe-app-6e634.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:550117626799:ios:d697fe2acf10d62164d55a</string>
+</dict>
+</plist>

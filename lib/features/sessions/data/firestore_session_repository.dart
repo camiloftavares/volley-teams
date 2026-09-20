@@ -28,25 +28,29 @@ class FirestoreSessionRepository implements SessionRepository {
   @override
   Stream<List<GameSession>> watchUpcomingSessions(String groupId) {
     final cutoff = Timestamp.fromDate(_clock().subtract(const Duration(days: 1)));
-    return _sessions(groupId)
-        .where('checkInClosesAt', isGreaterThan: cutoff)
-        .orderBy('checkInClosesAt')
-        .snapshots()
-        .map((s) => [for (final d in s.docs) sessionFromMap(d.id, d.data())]);
+    return guardFirestoreStream(
+      _sessions(groupId)
+          .where('checkInClosesAt', isGreaterThan: cutoff)
+          .orderBy('checkInClosesAt')
+          .snapshots()
+          .map((s) => [for (final d in s.docs) sessionFromMap(d.id, d.data())]),
+    );
   }
 
   @override
-  Stream<GameSession?> watchSession(String groupId, String sessionId) =>
-      _session(groupId, sessionId)
-          .snapshots()
-          .map((d) => d.exists ? sessionFromMap(d.id, d.data()!) : null);
+  Stream<GameSession?> watchSession(String groupId, String sessionId) => guardFirestoreStream(
+        _session(groupId, sessionId)
+            .snapshots()
+            .map((d) => d.exists ? sessionFromMap(d.id, d.data()!) : null),
+      );
 
   @override
-  Stream<List<CheckIn>> watchCheckIns(String groupId, String sessionId) =>
-      _checkIns(groupId, sessionId)
-          .orderBy('checkedInAt')
-          .snapshots()
-          .map((s) => [for (final d in s.docs) checkInFromMap(d.id, d.data())]);
+  Stream<List<CheckIn>> watchCheckIns(String groupId, String sessionId) => guardFirestoreStream(
+        _checkIns(groupId, sessionId)
+            .orderBy('checkedInAt')
+            .snapshots()
+            .map((s) => [for (final d in s.docs) checkInFromMap(d.id, d.data())]),
+      );
 
   @override
   Future<Result<GameSession>> getSession(String groupId, String sessionId) =>

@@ -22,29 +22,33 @@ class FirestoreGroupRepository implements GroupRepository {
       _db.collection('inviteCodes').doc(code);
 
   @override
-  Stream<List<Group>> watchMyGroups(String userId) => _db
-          .collectionGroup('members')
-          .where('userId', isEqualTo: userId)
-          .snapshots()
-          .asyncMap((snapshot) async {
-        final ids = {for (final doc in snapshot.docs) doc.reference.parent.parent!.id};
-        final docs = await Future.wait(ids.map((id) => _groups.doc(id).get()));
-        return [
-          for (final doc in docs)
-            if (doc.exists) groupFromMap(doc.id, doc.data()!),
-        ]..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
-      });
+  Stream<List<Group>> watchMyGroups(String userId) => guardFirestoreStream(
+        _db.collectionGroup('members').where('userId', isEqualTo: userId).snapshots().asyncMap(
+          (snapshot) async {
+            final ids = {for (final doc in snapshot.docs) doc.reference.parent.parent!.id};
+            final docs = await Future.wait(ids.map((id) => _groups.doc(id).get()));
+            return [
+              for (final doc in docs)
+                if (doc.exists) groupFromMap(doc.id, doc.data()!),
+            ]..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+          },
+        ),
+      );
 
   @override
-  Stream<Group?> watchGroup(String groupId) => _groups
-      .doc(groupId)
-      .snapshots()
-      .map((doc) => doc.exists ? groupFromMap(doc.id, doc.data()!) : null);
+  Stream<Group?> watchGroup(String groupId) => guardFirestoreStream(
+        _groups
+            .doc(groupId)
+            .snapshots()
+            .map((doc) => doc.exists ? groupFromMap(doc.id, doc.data()!) : null),
+      );
 
   @override
-  Stream<List<Member>> watchMembers(String groupId) => _members(groupId).snapshots().map(
-        (snapshot) => [for (final doc in snapshot.docs) memberFromMap(doc.data())]
-          ..sort((a, b) => a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase())),
+  Stream<List<Member>> watchMembers(String groupId) => guardFirestoreStream(
+        _members(groupId).snapshots().map(
+              (snapshot) => [for (final doc in snapshot.docs) memberFromMap(doc.data())]
+                ..sort((a, b) => a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase())),
+            ),
       );
 
   @override

@@ -26,7 +26,10 @@ class AsyncValueView<T> extends StatelessWidget {
         error: (error, _) => Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
-            child: Text('Something went wrong.\n$error', textAlign: TextAlign.center),
+            child: Text(
+              error is Failure ? failureMessage(error) : 'Something went wrong.',
+              textAlign: TextAlign.center,
+            ),
           ),
         ),
       );

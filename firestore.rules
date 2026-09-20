@@ -54,6 +54,7 @@ service cloud.firestore {
 
         allow create: if signedIn()
           && request.auth.uid == userId
+          && request.resource.data.userId == userId
           && validRating(request.resource.data.selfRating)
           && (
             // The group creator's own document, written in the same batch as the group.

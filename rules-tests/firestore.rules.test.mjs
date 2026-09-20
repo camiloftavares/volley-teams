@@ -63,7 +63,7 @@ const session = (extra = {}) => ({
 });
 
 // g1: organizer "boss", player "ana". s1 = open window, s2 = opens later,
-// s3 = already published.
+// s3 = already published, s4 = window already closed.
 beforeEach(async () => {
   await env.clearFirestore();
   await env.withSecurityRulesDisabled(async (ctx) => {
@@ -75,6 +75,7 @@ beforeEach(async () => {
     await setDoc(doc(db, 'groups/g1/sessions/s1'), session());
     await setDoc(doc(db, 'groups/g1/sessions/s2'), session({ checkInOpensAt: hours(2), checkInClosesAt: hours(6) }));
     await setDoc(doc(db, 'groups/g1/sessions/s3'), session({ status: 'teamsPublished' }));
+    await setDoc(doc(db, 'groups/g1/sessions/s4'), session({ checkInOpensAt: hours(-5), checkInClosesAt: hours(-1) }));
   });
 });
 
@@ -100,6 +101,15 @@ describe('groups and invite codes', () => {
     batch.set(doc(db, 'inviteCodes/NEWCODE2'), { groupId: 'g2', groupName: 'New' });
     batch.set(doc(db, 'groups/g2/members/zoe'), member('zoe', 'organizer'));
     await assertSucceeds(batch.commit());
+  });
+
+  test('the organizer member document must carry the creator\'s own userId', async () => {
+    const db = as('zoe');
+    const batch = writeBatch(db);
+    batch.set(doc(db, 'groups/g2'), { name: 'New', organizerId: 'zoe', inviteCode: 'NEWCODE2' });
+    batch.set(doc(db, 'inviteCodes/NEWCODE2'), { groupId: 'g2', groupName: 'New' });
+    batch.set(doc(db, 'groups/g2/members/zoe'), member('ana', 'organizer'));
+    await assertFails(batch.commit());
   });
 
   test('a group cannot be created on behalf of someone else', async () => {
@@ -135,6 +145,10 @@ describe('members', () => {
     await assertFails(join('eve', { inviteCode: 'WRONG222' }));
     await assertFails(join('eve', { role: 'organizer' }));
     await assertFails(join('eve', { organizerOverride: 5 }));
+  });
+
+  test('the userId field must match the document id', async () => {
+    await assertFails(join('eve', { userId: 'ana' }));
   });
 
   test('nobody can join as somebody else', async () => {
@@ -209,6 +223,10 @@ describe('check-ins', () => {
   test('cannot check in before the window opens or after teams are published', async () => {
     await assertFails(checkIn('ana', 's2'));
     await assertFails(checkIn('ana', 's3'));
+  });
+
+  test('cannot check in after the window has closed', async () => {
+    await assertFails(checkIn('ana', 's4'));
   });
 
   test('cannot check in another user, or as a non-member', async () => {

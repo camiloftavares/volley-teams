@@ -1,5 +1,3 @@
-import 'dart:math';
-
 const minRating = 1;
 const maxRating = 3;
 

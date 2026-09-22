@@ -14,7 +14,7 @@ class UpdateSelfRating {
     required int rating,
   }) {
     if (!isValidRating(rating)) {
-      return Future.value(const Err(InvalidInput('Rating must be between 1 and 5')));
+      return Future.value(const Err(InvalidInput('Rating must be between 1 and 3')));
     }
     return _groups.updateSelfRating(groupId, userId, rating);
   }

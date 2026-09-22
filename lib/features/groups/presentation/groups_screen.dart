@@ -125,7 +125,7 @@ class _CreateGroupDialog extends StatefulWidget {
 
 class _CreateGroupDialogState extends State<_CreateGroupDialog> {
   final _name = TextEditingController();
-  int _rating = 3;
+  int _rating = 2;
 
   @override
   void dispose() {
@@ -146,7 +146,7 @@ class _CreateGroupDialogState extends State<_CreateGroupDialog> {
               decoration: const InputDecoration(labelText: 'Group name'),
             ),
             const SizedBox(height: 16),
-            const Text('Your skill level (1 to 5)'),
+            const Text('Your skill level: A, B, or C'),
             const SizedBox(height: 8),
             RatingSelector(value: _rating, onChanged: (r) => setState(() => _rating = r)),
             const SizedBox(height: 16),
@@ -175,7 +175,7 @@ class _JoinGroupDialog extends StatefulWidget {
 
 class _JoinGroupDialogState extends State<_JoinGroupDialog> {
   final _code = TextEditingController();
-  int _rating = 3;
+  int _rating = 2;
 
   @override
   void dispose() {
@@ -197,7 +197,7 @@ class _JoinGroupDialogState extends State<_JoinGroupDialog> {
               decoration: const InputDecoration(labelText: 'Invite code'),
             ),
             const SizedBox(height: 16),
-            const Text('Your skill level (1 to 5)'),
+            const Text('Your skill level: A, B, or C'),
             const SizedBox(height: 8),
             RatingSelector(value: _rating, onChanged: (r) => setState(() => _rating = r)),
           ],

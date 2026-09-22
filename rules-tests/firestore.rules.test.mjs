@@ -153,17 +153,17 @@ describe('members', () => {
   const join = (uid, data) =>
     setDoc(doc(as(uid), `groups/g1/members/${uid}`), { ...member(uid), inviteCode: 'CODE2345', ...data });
 
-  test('joining with a valid code and rating 1..5 works', async () => {
+  test('joining with a valid code and rating 1..3 works', async () => {
     await assertSucceeds(join('eve', {}));
     await assertSucceeds(join('bob', { selfRating: 1 }));
   });
 
   test('joining fails with a bad rating, a wrong code, an organizer role or an override', async () => {
-    await assertFails(join('eve', { selfRating: 6 }));
+    await assertFails(join('eve', { selfRating: 4 }));
     await assertFails(join('eve', { selfRating: 0 }));
     await assertFails(join('eve', { inviteCode: 'WRONG222' }));
     await assertFails(join('eve', { role: 'organizer' }));
-    await assertFails(join('eve', { organizerOverride: 5 }));
+    await assertFails(join('eve', { organizerOverride: 4 }));
   });
 
   // Mirrors joinByCode: read the code, read own member doc, create it if absent.
@@ -215,15 +215,15 @@ describe('members', () => {
   });
 
   test('a member edits only their own selfRating', async () => {
-    await assertSucceeds(updateDoc(doc(as('ana'), 'groups/g1/members/ana'), { selfRating: 5 }));
+    await assertSucceeds(updateDoc(doc(as('ana'), 'groups/g1/members/ana'), { selfRating: 2 }));
     await assertFails(updateDoc(doc(as('ana'), 'groups/g1/members/ana'), { selfRating: 9 }));
     await assertFails(updateDoc(doc(as('ana'), 'groups/g1/members/ana'), { role: 'organizer' }));
-    await assertFails(updateDoc(doc(as('ana'), 'groups/g1/members/ana'), { organizerOverride: 5 }));
+    await assertFails(updateDoc(doc(as('ana'), 'groups/g1/members/ana'), { organizerOverride: 2 }));
   });
 
-  test('only the organizer sets organizerOverride, within 1..5, and can clear it', async () => {
+  test('only the organizer sets organizerOverride, within 1..3, and can clear it', async () => {
     await assertSucceeds(updateDoc(doc(as('boss'), 'groups/g1/members/ana'), { organizerOverride: 2 }));
-    await assertFails(updateDoc(doc(as('boss'), 'groups/g1/members/ana'), { organizerOverride: 7 }));
+    await assertFails(updateDoc(doc(as('boss'), 'groups/g1/members/ana'), { organizerOverride: 4 }));
     await assertSucceeds(updateDoc(doc(as('boss'), 'groups/g1/members/ana'), { organizerOverride: null }));
     await assertFails(updateDoc(doc(as('boss'), 'groups/g1/members/ana'), { selfRating: 1 }));
   });

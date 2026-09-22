@@ -15,7 +15,7 @@ A Flutter mobile app (Android + iOS) for organizing recreational volleyball game
 | Authentication | Google sign-in (`firebase_auth` + `google_sign_in`) |
 | Backend | Firebase, **client-only**: Auth + Firestore + Security Rules. No Cloud Functions. |
 | Architecture | Clean Architecture, feature-first (Section 3) |
-| Skill level | Players self-rate 1–5 when joining a group. The organizer may set an override per member. |
+| Skill level | Players self-rate a tier (C/B/A, stored as an int 1–3) when joining a group. The organizer may set an override per member. |
 | Game day | Organizer opens a session, players check in, organizer generates then publishes teams |
 | Team sizing | Organizer sets players per team; team count is derived from check-ins |
 | Check-in | Invite code to join a group; GPS geofence check on every check-in |
@@ -52,7 +52,7 @@ Stack: Flutter (Dart 3), `flutter_riverpod` (no code generation), `go_router`, `
 ## 4. Domain model
 
 - **Group:** id, name, organizerId, inviteCode, court location (lat, lng), geofence radius in metres (default 150), default team size (default 6), optional `Schedule`.
-- **Member:** userId, displayName, photoUrl, `selfRating` (1–5), `organizerOverride` (1–5, optional), role (`organizer` | `player`). The group creator is the organizer. Effective rating = `organizerOverride ?? selfRating`.
+- **Member:** userId, displayName, photoUrl, `selfRating` (int 1–3, displayed as C/B/A), `organizerOverride` (int 1–3, optional, displayed as C/B/A), role (`organizer` | `player`). The group creator is the organizer. Effective rating = `organizerOverride ?? selfRating`.
 - **Schedule:** set of weekdays, local start time, optional end date, IANA timezone. Stored as wall-clock time in the group's timezone, so DST changes do not shift games.
 - **GameSession:** id, startsAt (UTC), teamSize, court location + radius (snapshot from the group), `checkInOpensAt` (start minus 60 min), `checkInClosesAt` (start plus 3 h), status (`scheduled` | `teamsPublished` | `cancelled`), `modified` flag (set when the organizer edits this occurrence), `teams`.
 - **CheckIn:** userId, checkedInAt, measured distance in metres.
@@ -83,7 +83,7 @@ Teams live inside the session document, so publishing is one atomic write.
 
 ## 6. Team balancing
 
-`TeamBalancer` is a pure function of (players with effective ratings, team size, injected `Random`).
+`TeamBalancer` is a pure function of (players with effective ratings, team size, injected `Random`). Note: "tier" below is the balancer's own rank-based bucket (one bucket per team), unrelated to the C/B/A skill grade a player is rated.
 
 **Team count.** With `n` check-ins and target size `s`: `T = max(2, round(n / s))`. Fails with `NotEnoughPlayers` when `n < 4`. Team sizes differ by at most 1. Example (`s = 6`): 13 -> 7+6, 17 -> 6+6+5, 15 -> 5+5+5.
 
@@ -124,7 +124,7 @@ Teams live inside the session document, so publishing is one atomic write.
 - **groups:** members read. Any signed-in user can create a group they own. Only the organizer updates or deletes.
 - **inviteCodes:** `get` allowed for signed-in users, `list` denied. Created only by the owner of the referenced group (same batch as the group).
 - **members:**
-  - A player creates only their own document, with role `player`, ratings in 1–5, and an `inviteCode` whose `inviteCodes/{code}.groupId` matches the group. The group owner may create their own `organizer` document.
+  - A player creates only their own document, with role `player`, ratings in 1–3 (int, displayed as C/B/A), and an `inviteCode` whose `inviteCodes/{code}.groupId` matches the group. The group owner may create their own `organizer` document.
   - A player may update only their own `selfRating`. Only the organizer may set `organizerOverride`.
   - A player may delete their own document; the organizer may delete any member.
 - **sessions:** members read. Only the organizer creates, edits or cancels. A change to `teamsPublished` is valid only from `scheduled`.

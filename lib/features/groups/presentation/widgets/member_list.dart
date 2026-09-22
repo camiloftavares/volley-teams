@@ -27,10 +27,11 @@ class MemberList extends ConsumerWidget {
               title: Text(member.isOrganizer ? '${member.displayName} (organizer)' : member.displayName),
               subtitle: Text(
                 member.organizerOverride == null
-                    ? 'Self-rated ${member.selfRating}'
-                    : 'Self-rated ${member.selfRating}, organizer set ${member.organizerOverride}',
+                    ? 'Self-rated ${ratingTierLabel(member.selfRating)}'
+                    : 'Self-rated ${ratingTierLabel(member.selfRating)}, '
+                        'organizer set ${ratingTierLabel(member.organizerOverride!)}',
               ),
-              trailing: Chip(label: Text('${member.effectiveRating}')),
+              trailing: Chip(label: Text(ratingTierLabel(member.effectiveRating))),
               onTap: member.userId == me?.uid
                   ? () => _editSelf(context, ref, member)
                   : isOrganizer

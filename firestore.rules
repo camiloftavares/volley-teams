@@ -28,7 +28,7 @@ service cloud.firestore {
     }
 
     function validRating(value) {
-      return value is int && value >= 1 && value <= 5;
+      return value is int && value >= 1 && value <= 3;
     }
 
     function onlyChanges(keys) {

@@ -15,7 +15,7 @@ class JoinGroupByCode {
     final normalized = code.trim().toUpperCase();
     if (normalized.isEmpty) return Future.value(const Err(InvalidInviteCode()));
     if (!isValidRating(member.selfRating)) {
-      return Future.value(const Err(InvalidInput('Rating must be between 1 and 5')));
+      return Future.value(const Err(InvalidInput('Rating must be between 1 and 3')));
     }
     return _groups.joinByCode(
       normalized,

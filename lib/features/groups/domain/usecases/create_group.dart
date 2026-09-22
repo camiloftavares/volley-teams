@@ -22,7 +22,7 @@ class CreateGroup {
     final trimmed = name.trim();
     if (trimmed.isEmpty) return Future.value(const Err(InvalidInput('Name is required')));
     if (!isValidRating(organizer.selfRating)) {
-      return Future.value(const Err(InvalidInput('Rating must be between 1 and 5')));
+      return Future.value(const Err(InvalidInput('Rating must be between 1 and 3')));
     }
     final group = Group(
       id: _codes.id(),

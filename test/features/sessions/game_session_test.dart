@@ -43,7 +43,7 @@ void main() {
   });
 
   test('team average is total divided by size', () {
-    const team = Team(index: 0, playerIds: ['a', 'b', 'c'], ratingTotal: 10);
-    expect(team.averageRating, closeTo(3.333, 0.001));
+    const team = Team(index: 0, playerIds: ['a', 'b', 'c'], ratingTotal: 7);
+    expect(team.averageRating, closeTo(2.333, 0.001));
   });
 }

@@ -7,7 +7,7 @@ void main() {
   });
 
   test('ratingTierLabel maps 3 to A, 2 to B, 1 to C', () {
-    expect(ratingTierLabel(3), 'Z'); // deliberately wrong, to verify AC4
+    expect(ratingTierLabel(3), 'A');
     expect(ratingTierLabel(2), 'B');
     expect(ratingTierLabel(1), 'C');
   });

@@ -53,7 +53,7 @@ void main() {
 
     test('fewer than four players is rejected', () {
       final result = balancer.balance(
-        players: roster([5, 4, 3]),
+        players: roster([3, 2, 1]),
         teamSize: 6,
         random: Random(1),
       );
@@ -79,45 +79,45 @@ void main() {
   });
 
   group('balancing', () {
-    test('two teams of four each get one player of every rating', () {
+    test('two teams of three each get one player of every rating', () {
       final teams = balancer
           .balance(
-            players: roster([5, 5, 4, 4, 3, 3, 2, 2]),
-            teamSize: 4,
+            players: roster([3, 3, 2, 2, 1, 1]),
+            teamSize: 3,
             random: Random(3),
           )
           .value;
       for (final team in teams) {
         final ratings = team.playerIds
-            .map((id) => [5, 5, 4, 4, 3, 3, 2, 2][int.parse(id.substring(1))])
+            .map((id) => [3, 3, 2, 2, 1, 1][int.parse(id.substring(1))])
             .toList()
           ..sort((a, b) => b.compareTo(a));
-        expect(ratings, [5, 4, 3, 2]);
-        expect(team.ratingTotal, 14);
+        expect(ratings, [3, 2, 1]);
+        expect(team.ratingTotal, 6);
       }
     });
 
     test('the three best players of a 3-team game are on different teams', () {
-      final players = roster([5, 5, 5, 3, 3, 3, 3, 3, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1]);
+      final players = roster([3, 3, 3, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1]);
       for (var seed = 0; seed < 20; seed++) {
         final teams = balancer.balance(players: players, teamSize: 6, random: Random(seed)).value;
         expect(teams, hasLength(3));
         for (final team in teams) {
-          final aces = team.playerIds.where((id) => players.firstWhere((p) => p.id == id).rating == 5);
+          final aces = team.playerIds.where((id) => players.firstWhere((p) => p.id == id).rating == 3);
           expect(aces, hasLength(1), reason: 'seed $seed team ${team.index}');
         }
       }
     });
 
     test('the same seed gives the same teams', () {
-      final players = roster([5, 4, 4, 3, 3, 3, 2, 2, 1, 5, 4, 2, 3]);
+      final players = roster([2, 1, 1, 3, 3, 3, 2, 2, 1, 2, 1, 2, 3]);
       final a = balancer.balance(players: players, teamSize: 6, random: Random(99)).value;
       final b = balancer.balance(players: players, teamSize: 6, random: Random(99)).value;
       expect(a, b);
     });
 
     test('different seeds vary the teams', () {
-      final players = roster(List.generate(12, (i) => 1 + i % 5));
+      final players = roster(List.generate(12, (i) => 1 + i % 3));
       final draws = {
         for (var seed = 0; seed < 10; seed++)
           balancer
@@ -132,10 +132,10 @@ void main() {
 
   group('swap pass', () {
     test('narrows the spread of a raw draw that was unbalanced', () {
-      // Found by scanning seeds: for seed 11 the raw draw has a spread of 1.0
+      // Found by scanning seeds: for seed 12 the raw draw has a spread of 0.5
       // and the swap pass brings it to 0.0.
-      final players = roster([5, 4, 4, 3, 3, 2, 2, 1]);
-      const seed = 11;
+      final players = roster([3, 3, 3, 2, 2, 1, 1, 1]);
+      const seed = 12;
 
       final raw = const TeamBalancer(swapPass: false)
           .balance(players: players, teamSize: 4, random: Random(seed))
@@ -154,7 +154,7 @@ void main() {
       for (var run = 0; run < 400; run++) {
         final n = 4 + meta.nextInt(37); // 4..40 players
         final teamSize = 2 + meta.nextInt(7); // 2..8
-        final players = roster([for (var i = 0; i < n; i++) 1 + meta.nextInt(5)]);
+        final players = roster([for (var i = 0; i < n; i++) 1 + meta.nextInt(3)]);
         final seed = meta.nextInt(1 << 30);
         final label = 'run $run n=$n teamSize=$teamSize seed=$seed';
 

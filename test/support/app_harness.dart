@@ -42,8 +42,9 @@ class Harness {
         randomProvider.overrideWithValue(Random(1)),
       ];
 
-  /// Group `g1` (organizer "boss") with players ana, p1..p5 rated 1..5, and one
-  /// scheduled session `s1` that starts at [now] with teams of [teamSize].
+  /// Group `g1` (organizer "boss") with players ana, p1..p5 rated C/B/A/C/B
+  /// (1 + (i-1) % 3), and one scheduled session `s1` that starts at [now]
+  /// with teams of [teamSize].
   void seed({int teamSize = 3, Group? group}) {
     groups.groups['g1'] = group ??
         const Group(id: 'g1', name: 'Sunday Vôlei', organizerId: 'boss', inviteCode: 'ABCD2345', court: Coordinates(0, 0));
@@ -51,7 +52,10 @@ class Harness {
       'boss': const Member(userId: 'boss', displayName: 'Boss', selfRating: 3, role: MemberRole.organizer),
       'ana': const Member(userId: 'ana', displayName: 'Ana', selfRating: 3, role: MemberRole.player),
       for (var i = 1; i <= 5; i++)
-        'p$i': Member(userId: 'p$i', displayName: 'Player $i', selfRating: i, role: MemberRole.player),
+        'p$i': Member(
+          userId: 'p$i', displayName: 'Player $i',
+          selfRating: 1 + (i - 1) % 3, role: MemberRole.player,
+        ),
     };
     sessions.sessions['g1'] = {
       's1': GameSession.scheduled(

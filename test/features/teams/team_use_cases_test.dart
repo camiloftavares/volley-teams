@@ -35,9 +35,9 @@ void main() {
       );
     groups.members['g1'] = {
       for (final m in [
-        player('a', 5), player('b', 5), player('c', 3), player('d', 3),
-        player('e', 1, override: 4), player('f', 2), player('g', 2), player('h', 1),
-        player('absent', 5),
+        player('a', 3), player('b', 3), player('c', 2), player('d', 2),
+        player('e', 1, override: 2), player('f', 2), player('g', 2), player('h', 1),
+        player('absent', 3),
       ])
         m.userId: m,
     };
@@ -58,11 +58,11 @@ void main() {
     expect(teams, hasLength(2));
     final ids = teams.expand((t) => t.playerIds).toSet();
     expect(ids, {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'}); // not 'absent'
-    // The two 5s are on different teams.
+    // The two A-tier players are on different teams.
     final teamOf = {for (final t in teams) for (final id in t.playerIds) id: t.index};
     expect(teamOf['a'], isNot(teamOf['b']));
-    // 'e' is rated 1 but overridden to 4: the two totals reflect that.
-    expect(teams.fold<int>(0, (s, t) => s + t.ratingTotal), 5 + 5 + 3 + 3 + 4 + 2 + 2 + 1);
+    // 'e' is rated 1 but overridden to 2: the two totals reflect that.
+    expect(teams.fold<int>(0, (s, t) => s + t.ratingTotal), 3 + 3 + 2 + 2 + 2 + 2 + 2 + 1);
   });
 
   test('only the organizer can generate, and fewer than four players is rejected', () async {

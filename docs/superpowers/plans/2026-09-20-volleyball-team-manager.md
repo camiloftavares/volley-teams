@@ -26,7 +26,13 @@ These come from the spec; every task's requirements include them.
 - State management and DI: `flutter_riverpod` **without code generation**. Navigation: `go_router`.
 - Backend: Firebase Auth + Firestore + Security Rules. **No Cloud Functions.**
 - Errors: use cases return `Result<T>`; exceptions never cross layer boundaries.
-- Skill rating: integer 1 to 5. Effective rating = `organizerOverride ?? selfRating`.
+- Skill rating: integer 1 to 3, displayed as a C/B/A tier. Effective rating = `organizerOverride ?? selfRating`.
+
+  (Note, added later: the rest of this historical plan document — including embedded
+  code excerpts below — still shows the original 1-to-5 scale from when this plan was
+  written. It's kept as a historical record rather than rewritten; see
+  `docs/superpowers/specs/2026-09-20-volleyball-team-manager-design.md` and the code
+  itself for the current 1-to-3/C-B-A scale.)
 - Team count: `max(2, round(n / teamSize))`. Fewer than 4 checked-in players fails with `NotEnoughPlayers`. Team sizes differ by at most 1. No team gets two players from the same tier. The swap pass compares team **average** ratings.
 - Check-in window: opens 60 minutes before the start, closes 3 hours after it, and is closed once teams are published or the session is cancelled.
 - Defaults: geofence radius 150 m, team size 6.

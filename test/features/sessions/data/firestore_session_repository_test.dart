@@ -19,8 +19,8 @@ void main() {
   late FirestoreSessionRepository repo;
   final s1 = session('s1', DateTime.utc(2026, 9, 22, 22));
   const teams = [
-    Team(index: 0, playerIds: ['a', 'b'], ratingTotal: 7),
-    Team(index: 1, playerIds: ['c', 'd'], ratingTotal: 6),
+    Team(index: 0, playerIds: ['a', 'b'], ratingTotal: 5),
+    Team(index: 1, playerIds: ['c', 'd'], ratingTotal: 4),
   ];
 
   setUp(() {

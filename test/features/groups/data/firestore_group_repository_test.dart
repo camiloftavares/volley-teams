@@ -8,7 +8,7 @@ import 'package:volley_teams/features/groups/domain/entities/group.dart';
 import 'package:volley_teams/features/groups/domain/entities/member.dart';
 import 'package:volley_teams/features/groups/domain/entities/schedule.dart';
 
-const ana = Member(userId: 'ana', displayName: 'Ana', photoUrl: 'http://x/a.png', selfRating: 4, role: MemberRole.organizer);
+const ana = Member(userId: 'ana', displayName: 'Ana', photoUrl: 'http://x/a.png', selfRating: 3, role: MemberRole.organizer);
 const bruno = Member(userId: 'bruno', displayName: 'Bruno', selfRating: 3, role: MemberRole.player);
 
 final sundayGroup = Group(
@@ -92,7 +92,7 @@ void main() {
     test('joining twice keeps the existing rating and override', () async {
       await repo.joinByCode('ABCD2345', bruno);
       await repo.setOrganizerOverride('g1', 'bruno', 2);
-      await repo.joinByCode('ABCD2345', bruno.copyWith(selfRating: 5));
+      await repo.joinByCode('ABCD2345', bruno.copyWith(selfRating: 2));
       final stored = memberFromMap((await db.doc('groups/g1/members/bruno').get()).data()!);
       expect(stored.selfRating, 3);
       expect(stored.organizerOverride, 2);
@@ -106,15 +106,15 @@ void main() {
     });
 
     test('rating and override updates are visible to getMembers and watchMembers', () async {
-      await repo.updateSelfRating('g1', 'bruno', 5);
+      await repo.updateSelfRating('g1', 'bruno', 2);
       await repo.setOrganizerOverride('g1', 'bruno', 1);
       final members = (await repo.getMembers('g1')).value;
       final updated = members.firstWhere((m) => m.userId == 'bruno');
-      expect(updated.selfRating, 5);
+      expect(updated.selfRating, 2);
       expect(updated.effectiveRating, 1);
 
       await repo.setOrganizerOverride('g1', 'bruno', null);
-      expect((await repo.watchMembers('g1').first).firstWhere((m) => m.userId == 'bruno').effectiveRating, 5);
+      expect((await repo.watchMembers('g1').first).firstWhere((m) => m.userId == 'bruno').effectiveRating, 2);
     });
 
     test('updateGroup stores new settings and a removed schedule', () async {

@@ -14,7 +14,7 @@ import 'package:volley_teams/features/groups/domain/usecases/update_self_rating.
 
 import '../../support/fake_group_repository.dart';
 
-const ana = Member(userId: 'ana', displayName: 'Ana', selfRating: 4, role: MemberRole.player);
+const ana = Member(userId: 'ana', displayName: 'Ana', selfRating: 3, role: MemberRole.player);
 const bruno = Member(userId: 'bruno', displayName: 'Bruno', selfRating: 3, role: MemberRole.player);
 const court = Coordinates(10, 20);
 
@@ -37,7 +37,7 @@ void main() {
       expect(group.defaultTeamSize, 6);
       expect(group.radiusMeters, 150);
       expect(repo.members[group.id]!['ana']!.role, MemberRole.organizer);
-      expect(repo.members[group.id]!['ana']!.selfRating, 4);
+      expect(repo.members[group.id]!['ana']!.selfRating, 3);
     });
 
     test('rejects an empty name and an out-of-range rating', () async {
@@ -62,8 +62,8 @@ void main() {
     test('a joiner cannot smuggle in an organizer role or override', () async {
       final group = (await createGroup(name: 'G', court: court, organizer: ana)).value;
       final sneaky = Member(
-        userId: 'eve', displayName: 'Eve', selfRating: 5,
-        organizerOverride: 5, role: MemberRole.organizer,
+        userId: 'eve', displayName: 'Eve', selfRating: 3,
+        organizerOverride: 3, role: MemberRole.organizer,
       );
       await JoinGroupByCode(repo)(code: group.inviteCode, member: sneaky);
       final stored = repo.members[group.id]!['eve']!;
@@ -80,7 +80,7 @@ void main() {
 
       final again = await JoinGroupByCode(repo)(
         code: group.inviteCode,
-        member: bruno.copyWith(selfRating: 5),
+        member: bruno.copyWith(selfRating: 2),
       );
       expect(again.isOk, isTrue);
       final storedBruno = repo.members[group.id]!['bruno']!;
@@ -101,15 +101,15 @@ void main() {
       await JoinGroupByCode(repo)(code: group.inviteCode, member: bruno);
     });
 
-    test('a member can change their own rating within 1..5', () async {
-      expect((await UpdateSelfRating(repo)(groupId: groupId, userId: 'bruno', rating: 5)).isOk, isTrue);
-      expect(repo.members[groupId]!['bruno']!.selfRating, 5);
+    test('a member can change their own rating within 1..3', () async {
+      expect((await UpdateSelfRating(repo)(groupId: groupId, userId: 'bruno', rating: 3)).isOk, isTrue);
+      expect(repo.members[groupId]!['bruno']!.selfRating, 3);
       expect((await UpdateSelfRating(repo)(groupId: groupId, userId: 'bruno', rating: 0)).failure, isA<InvalidInput>());
     });
 
     test('only the organizer can set an override, and it changes the effective rating', () async {
       final useCase = SetOrganizerOverride(repo, OrganizerGuard(repo));
-      final denied = await useCase(groupId: groupId, actingUserId: 'bruno', targetUserId: 'bruno', rating: 5);
+      final denied = await useCase(groupId: groupId, actingUserId: 'bruno', targetUserId: 'bruno', rating: 3);
       expect(denied.failure, isA<Unauthorized>());
 
       final allowed = await useCase(groupId: groupId, actingUserId: 'ana', targetUserId: 'bruno', rating: 1);

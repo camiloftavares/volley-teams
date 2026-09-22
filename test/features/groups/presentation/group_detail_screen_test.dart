@@ -60,16 +60,16 @@ void main() {
     await tester.pumpWidget(h.app(const GroupDetailScreen(groupId: 'g1')));
     await tester.pumpAndSettle();
 
-    // Organizer taps Player 1 (self-rated 1) and sets an override of 4.
+    // Organizer taps Player 1 (self-rated C) and sets an override of A.
     await tester.tap(find.byKey(const Key('member-p1')));
     await tester.pumpAndSettle();
-    await tester.tap(find.descendant(of: find.byType(AlertDialog), matching: find.text('4')));
+    await tester.tap(find.descendant(of: find.byType(AlertDialog), matching: find.text('A')));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Save'));
     await tester.pumpAndSettle();
 
-    expect(h.groups.members['g1']!['p1']!.organizerOverride, 4);
+    expect(h.groups.members['g1']!['p1']!.organizerOverride, 3);
     expect(h.groups.members['g1']!['p1']!.selfRating, 1);
-    expect(find.textContaining('organizer set 4'), findsOneWidget);
+    expect(find.textContaining('organizer set A'), findsOneWidget);
   });
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/rating.dart';
 import '../../../sessions/domain/entities/team.dart';
 
 class TeamsView extends StatelessWidget {
@@ -34,7 +35,7 @@ class TeamsView extends StatelessWidget {
                     children: [
                       Text('Team ${team.index + 1}', style: Theme.of(context).textTheme.titleMedium),
                       const Spacer(),
-                      Text('avg ${team.averageRating.toStringAsFixed(1)}'),
+                      Text('avg ${averageTierLabel(team.averageRating)}'),
                     ],
                   ),
                   const SizedBox(height: 8),

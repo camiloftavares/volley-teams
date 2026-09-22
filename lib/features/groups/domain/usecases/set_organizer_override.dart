@@ -18,7 +18,7 @@ class SetOrganizerOverride {
     required int? rating,
   }) async {
     if (rating != null && !isValidRating(rating)) {
-      return const Err(InvalidInput('Rating must be between 1 and 5'));
+      return const Err(InvalidInput('Rating must be between 1 and 3'));
     }
     final guard = await _guard.require(groupId, actingUserId);
     if (guard.isErr) return guard.castErr();
